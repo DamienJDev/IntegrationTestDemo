@@ -16,17 +16,23 @@ public class Main {
             return;
         }
 
-        //Run tests:
-        List<Result> results = new LinkedList<Result>();
-        HealthCheckTests healthCheckTests = new HealthCheckTests();
-        healthCheckTests.runHealthCheckTests(results);
+        if(!Config.getConfig().getDoPerfTests()) {
+	        //Run tests:
+	        List<Result> results = new LinkedList<Result>();
+	        HealthCheckTests healthCheckTests = new HealthCheckTests();
+	        healthCheckTests.runHealthCheckTests(results);
 
-        ResultWriter resWriter = new ResultWriter(results);
-        try {
-            resWriter.writeToConsole();
-        } catch (Exception e){
-            System.out.println("unexpected exception while writing test results");
-            e.printStackTrace();
+	        ResultWriter resWriter = new ResultWriter(results);
+	        try {
+	            resWriter.writeToConsole();
+	        } catch (Exception e){
+	            System.out.println("unexpected exception while writing test results");
+	            e.printStackTrace();
+	        }
+        } else {
+            System.out.println("Starting performance tests, warning - this may take several minutes");
+            PerfTest test = new PerfTest();
+            test.doPerfTest();
         }
     }
 
@@ -46,6 +52,10 @@ public class Main {
         System.out.println("for verbose results use:");
         System.out.println("    -v");
         System.out.println();
+        System.out.println("to run tests as performance tests:");
+        System.out.println("-perf");
+        System.out.println("-threads=<number of threads to run> - defaults to 5, only used with -perf flag");
+        System.out.println("-requests=<number of requests per thread to try before stopping> - defaults to 10, only used with -perf flag");
         System.out.println();
 
         if(containsArg(args, "-v")){
@@ -58,6 +68,34 @@ public class Main {
             } else if(Config.getConfig().getUrlEndpoint().endsWith("\\")){
                 Config.getConfig().setUrlEndpoint(Config.getConfig().getUrlEndpoint().substring(0, Config.getConfig().getUrlEndpoint().length()-1));
             }
+        }
+        if(containsArg(args, "-perf")) {
+        	Config.getConfig().setDoPerfTests(containsArg(args, "-perf"));
+	        if(containsArg(args, "-threads")) {
+	        	try {
+		        	Config.getConfig().setPerfTestNumThreads(Integer.parseInt(getArgValue(args, "-threads")));
+		            System.out.println(Config.getConfig().getPerfTestNumThreads() + " threads set for performance test");
+	            }catch (NumberFormatException e) {
+	                System.out.println("Failed to parse -threads value, defaulting to 5, supplied value was: " + getArgValue(args, "-threads"));
+	            }
+	            if(Config.getConfig().getPerfTestNumThreads()<0){
+	                System.out.println("-requests value cannot be negative, defaulting to 5");
+	                Config.getConfig().setPerfTestNumThreads(5);
+	            }
+	        }
+	
+	        if(containsArg(args, "-requests")) {
+	            try {
+	            	Config.getConfig().setPerfTestNumRequests(Integer.parseInt(getArgValue(args, "-requests")));
+	                System.out.println(Config.getConfig().getPerfTestNumRequests() + " requests per thread set for performance test");
+	            }catch (NumberFormatException e) {
+	                System.out.println("Failed to parse -requests value, defaulting to 10, supplied value was: " + getArgValue(args, "-requests"));
+	            }
+	            if(Config.getConfig().getPerfTestNumRequests()<0){
+	                System.out.println("-requests value cannot be negative, defaulting to 10");
+	                Config.getConfig().setPerfTestNumRequests(50);
+	            }
+	        }
         }
     }
     private static boolean containsArg(String[] args, String argToFind) {

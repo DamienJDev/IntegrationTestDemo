@@ -4,6 +4,11 @@ public class Config {
     private static Config config;
 
     private boolean verboseResults = false;
+    private boolean doPerfTests = false;
+    
+    private int perfTestNumThreads = 5;
+    private int perfTestNumRequests = 10;
+    
     private String urlEndpoint = "http://localhost:8080";
     private String runSpecificTest;
     private Config() {}
@@ -30,6 +35,24 @@ public class Config {
     }
     public String getRunSpecificTest() {
         return config.runSpecificTest;
+    }
+    public void setDoPerfTests(boolean doPerfTests) {
+    	config.doPerfTests = doPerfTests;
+    }
+    public boolean getDoPerfTests() {
+    	return config.doPerfTests;
+    }
+    public int getPerfTestNumThreads(){
+        return config.perfTestNumThreads;
+    }
+    public void setPerfTestNumThreads(int perfTestNumThreads){
+        config.perfTestNumThreads = perfTestNumThreads;
+    }
+    public int getPerfTestNumRequests(){
+        return config.perfTestNumRequests;
+    }
+    public void setPerfTestNumRequests(int perfTestNumRequests){
+        config.perfTestNumRequests = perfTestNumRequests;
     }
     public boolean runAllTests() {
         if(config.runSpecificTest==null || config.runSpecificTest.equalsIgnoreCase("")){
